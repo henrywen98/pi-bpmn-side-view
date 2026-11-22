@@ -284,26 +284,26 @@ with tempfile.TemporaryDirectory(prefix="pi-bpmn-e2e-") as tmp:
         # 2. Open /bpmn demo -> true right-side split view in FIT auto-fit full-diagram mode!
         send("fs", "/bpmn demo")
         wait(
-            lambda: "采购审批流程" in screen("fs")
+            lambda: "Purchase Approval" in screen("fs")
             and "[FIT]" in screen("fs")
-            and "收到采购需求" in screen("fs")
-            and "采购已完成" in screen("fs")
-            and "外部供应商" in screen("fs"),
+            and "Request Received" in screen("fs")
+            and "Order Completed" in screen("fs")
+            and "External Vendor" in screen("fs"),
             10,
             "/bpmn demo auto-fit full diagram",
         )
         time.sleep(0.3)
 
         lines = screen("fs").splitlines()
-        header_line = next((l for l in lines if "采购审批流程" in l and "[FIT]" in l), "")
+        header_line = next((l for l in lines if "Purchase Approval" in l and "[FIT]" in l), "")
         assert header_line, "Missing BPMN header line"
-        bpmn_col = header_line.index("采购审批流程")
+        bpmn_col = header_line.index("Purchase Approval")
         assert bpmn_col > 40, f"Expected BPMN on the right side (col > 40), got col {bpmn_col}"
         snap("fs", "01-split-fit-full", 144, 40)
         record(f"/bpmn demo auto-fit rendered the ENTIRE 4-lane diagram (Start -> End) in right split view (col {bpmn_col})")
 
         # 2b. Test real SGR mouse drag on the vertical │ divider left (widen) and right (narrow)!
-        divider_line = next((l for l in lines if "采购审批流程" in l), "")
+        divider_line = next((l for l in lines if "Purchase Approval" in l), "")
         div_col_0 = divider_line.index("│")
         div_col_1 = div_col_0 + 1  # SGR mouse coords are 1-based
         # Press left mouse button on divider at row 10, drag 22 cols left to widen right pane, release
@@ -314,7 +314,7 @@ with tempfile.TemporaryDirectory(prefix="pi-bpmn-e2e-") as tmp:
         time.sleep(0.2)
         literal("fs", f"\x1b[<0;{drag_left_col};10m")
         def current_div_col():
-            line = next((l for l in screen("fs").splitlines() if "采购审批流程" in l), "")
+            line = next((l for l in screen("fs").splitlines() if "Purchase Approval" in l), "")
             idx = line.find("│")
             if idx == -1:
                 idx = line.find("┃")
@@ -342,7 +342,7 @@ with tempfile.TemporaryDirectory(prefix="pi-bpmn-e2e-") as tmp:
 
         # 3. Verify typing on the left chat editor works while right BPMN pane stays open
         literal("fs", "LEFT_CHAT_INPUT_OK")
-        wait(lambda: "LEFT_CHAT_INPUT_OK" in screen("fs") and "采购审批流程" in screen("fs"), 6, "left editor input alongside right BPMN")
+        wait(lambda: "LEFT_CHAT_INPUT_OK" in screen("fs") and "Purchase Approval" in screen("fs"), 6, "left editor input alongside right BPMN")
         left_line = next((l for l in screen("fs").splitlines() if "LEFT_CHAT_INPUT_OK" in l), "")
         assert left_line.index("LEFT_CHAT_INPUT_OK") < bpmn_col, "Typed text should stay inside left pane"
         key("fs", "C-u")
@@ -400,12 +400,12 @@ with tempfile.TemporaryDirectory(prefix="pi-bpmn-e2e-") as tmp:
         wait(lambda: "[LR]" in screen("fs"), 6, "return from inspector")
 
         # Resize width wider with ']'
-        before_col = next(l for l in screen("fs").splitlines() if "采购审批流程" in l).index("采购审批流程")
+        before_col = next(l for l in screen("fs").splitlines() if "Purchase Approval" in l).index("Purchase Approval")
         key("fs", "]")
         time.sleep(0.2)
         key("fs", "]")
         wait(
-            lambda: next((l for l in screen("fs").splitlines() if "采购审批流程" in l), "x" * 200).index("采购审批流程")
+            lambda: next((l for l in screen("fs").splitlines() if "Purchase Approval" in l), "x" * 200).index("Purchase Approval")
             < before_col - 5,
             6,
             "widen right pane with ']'",
@@ -416,31 +416,31 @@ with tempfile.TemporaryDirectory(prefix="pi-bpmn-e2e-") as tmp:
         key("fs", "Escape")
         wait(lambda: "Drag │ to resize" in screen("fs"), 6, "Esc unfocus back to left chat")
         literal("fs", "AFTER_ESC_STILL_OPEN")
-        wait(lambda: "AFTER_ESC_STILL_OPEN" in screen("fs") and "采购审批流程" in screen("fs"), 6, "typing after Esc")
+        wait(lambda: "AFTER_ESC_STILL_OPEN" in screen("fs") and "Purchase Approval" in screen("fs"), 6, "typing after Esc")
         key("fs", "C-u")
         record("Esc returned keyboard focus to left chat editor while keeping BPMN side view open")
 
         # 5. Load custom .bpmn file + verify live file watch reload
         sample_file = work / "refund.bpmn"
         sample_xml_v1 = """<?xml version="1.0" encoding="UTF-8"?>
-<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" id="d_ref" name="退款工单流程">
-  <bpmn:process id="p_ref" name="退款工单流程">
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" id="d_ref" name="Refund Ticket Flow">
+  <bpmn:process id="p_ref" name="Refund Ticket Flow">
     <bpmn:laneSet id="ls1">
-      <bpmn:lane id="l_cs" name="客服团队">
+      <bpmn:lane id="l_cs" name="Support">
         <bpmn:flowNodeRef>s1</bpmn:flowNodeRef>
         <bpmn:flowNodeRef>t_check</bpmn:flowNodeRef>
       </bpmn:lane>
-      <bpmn:lane id="l_fin" name="财务结算">
+      <bpmn:lane id="l_fin" name="Billing">
         <bpmn:flowNodeRef>t_pay</bpmn:flowNodeRef>
         <bpmn:flowNodeRef>e1</bpmn:flowNodeRef>
       </bpmn:lane>
     </bpmn:laneSet>
-    <bpmn:startEvent id="s1" name="收到退款申请" />
-    <bpmn:userTask id="t_check" name="核对订单与凭证" />
-    <bpmn:serviceTask id="t_pay" name="原路退回款项" />
-    <bpmn:endEvent id="e1" name="退款完成" />
+    <bpmn:startEvent id="s1" name="Refund Requested" />
+    <bpmn:userTask id="t_check" name="Verify Receipt" />
+    <bpmn:serviceTask id="t_pay" name="Issue Refund" />
+    <bpmn:endEvent id="e1" name="Refunded" />
     <bpmn:sequenceFlow id="f1" sourceRef="s1" targetRef="t_check" />
-    <bpmn:sequenceFlow id="f2" sourceRef="t_check" targetRef="t_pay" name="审核通过" />
+    <bpmn:sequenceFlow id="f2" sourceRef="t_check" targetRef="t_pay" name="Approved" />
     <bpmn:sequenceFlow id="f3" sourceRef="t_pay" targetRef="e1" />
   </bpmn:process>
 </bpmn:definitions>
@@ -449,26 +449,26 @@ with tempfile.TemporaryDirectory(prefix="pi-bpmn-e2e-") as tmp:
         send("fs", "/bpmn layout tb")
         time.sleep(0.2)
         send("fs", "/bpmn refund.bpmn")
-        wait(lambda: "退款工单流程" in screen("fs") and "核对订单与凭证" in screen("fs"), 8, "/bpmn refund.bpmn")
+        wait(lambda: "Refund Ticket Flow" in screen("fs") and "Verify Receipt" in screen("fs"), 8, "/bpmn refund.bpmn")
         # Modify file on disk -> live watcher should update right pane automatically!
-        sample_file.write_text(sample_xml_v1.replace("核对订单与凭证", "已热更新核验节点"), encoding="utf-8")
-        wait(lambda: "已热更新核验节点" in screen("fs"), 8, "live file watcher reload")
+        sample_file.write_text(sample_xml_v1.replace("Verify Receipt", "Live Updated Check"), encoding="utf-8")
+        wait(lambda: "Live Updated" in screen("fs"), 8, "live file watcher reload")
         snap("fs", "04-live-file-reload", 144, 40)
         record("/bpmn <file> loaded custom BPMN and fs.watch live-reloaded changes automatically")
 
         # 6a. Portrait / vertical monitor terminal (78x56): auto-switches from Right dock [A:R] -> Top dock [A:T]!
         ctl("resize-window", "-t", "test:fs", "-x", "78", "-y", "56")
         wait(
-            lambda: "[A:T]" in screen("fs") and "drag to resize" in screen("fs") and "退款工单流程" in screen("fs"),
+            lambda: "[A:T]" in screen("fs") and "drag to resize" in screen("fs") and "Refund Ticket Flow" in screen("fs"),
             8,
             "portrait terminal auto-switches to top dock [A:T]",
         )
         time.sleep(0.25)
         # Verify BPMN header is at top-left (row 0, col < 10) and bottom chat still accepts typing!
         p_lines = screen("fs").splitlines()
-        assert "退款工单流程" in p_lines[0], f"Expected BPMN at top row 0 in portrait mode, got: {p_lines[0]!r}"
+        assert "Refund Ticket Flow" in p_lines[0], f"Expected BPMN at top row 0 in portrait mode, got: {p_lines[0]!r}"
         literal("fs", "PORTRAIT_BOTTOM_CHAT")
-        wait(lambda: "PORTRAIT_BOTTOM_CHAT" in screen("fs") and "退款工单流程" in screen("fs"), 6, "bottom chat input in portrait mode")
+        wait(lambda: "PORTRAIT_BOTTOM_CHAT" in screen("fs") and "Refund Ticket Flow" in screen("fs"), 6, "bottom chat input in portrait mode")
         key("fs", "C-u")
         # Test dragging the horizontal divider DOWN by 8 rows to resize top BPMN height!
         div_row_0 = next(i for i, l in enumerate(screen("fs").splitlines()) if "drag to resize" in l)
@@ -491,16 +491,16 @@ with tempfile.TemporaryDirectory(prefix="pi-bpmn-e2e-") as tmp:
 
         # 6b. Tiny terminal graceful hiding (64x20) + /bpmn modal + auto-return to Right dock on widen (144x40)
         ctl("resize-window", "-t", "test:fs", "-x", "64", "-y", "20")
-        wait(lambda: "已热更新核验节点" not in screen("fs") and "BPMN hidden" in screen("fs"), 6, "tiny terminal hides split pane and updates status")
+        wait(lambda: "Live Updated" not in screen("fs") and "BPMN hidden" in screen("fs"), 6, "tiny terminal hides split pane and updates status")
         record("Tiny terminal (64x20) gracefully hid split view and updated status hint")
 
         send("fs", "/bpmn modal")
-        wait(lambda: "退款工单流程" in screen("fs") and "已热更新核验节点" in screen("fs"), 8, "/bpmn modal on tiny terminal")
+        wait(lambda: "Refund Ticket Flow" in screen("fs") and "Live Updated" in screen("fs"), 8, "/bpmn modal on tiny terminal")
         key("fs", "Escape")
-        wait(lambda: "已热更新核验节点" not in screen("fs"), 6, "close modal on Esc")
+        wait(lambda: "Live Updated" not in screen("fs"), 6, "close modal on Esc")
         ctl("resize-window", "-t", "test:fs", "-x", "144", "-y", "40")
         wait(
-            lambda: "[A:R]" in screen("fs") and "退款工单流程" in screen("fs") and "已热更新核验节点" in screen("fs"),
+            lambda: "[A:R]" in screen("fs") and "Refund Ticket Flow" in screen("fs") and "Live Updated" in screen("fs"),
             8,
             "right split view returns automatically when terminal widens to landscape",
         )
@@ -510,15 +510,15 @@ with tempfile.TemporaryDirectory(prefix="pi-bpmn-e2e-") as tmp:
         key("fs", "M-g")
         wait(lambda: "●" in screen("fs"), 6, "focus before close")
         key("fs", "q")
-        wait(lambda: "退款工单流程" not in screen("fs") and "已热更新核验节点" not in screen("fs"), 6, "'q' closes side view")
+        wait(lambda: "Refund Ticket Flow" not in screen("fs") and "Live Updated" not in screen("fs"), 6, "'q' closes side view")
         record("'q' closed right BPMN view and restored full-width chat")
 
         send("fs", "/reload")
         time.sleep(1.5)
         send("fs", "/bpmn demo")
-        wait(lambda: "采购审批流程" in screen("fs"), 10, "/bpmn demo after /reload")
+        wait(lambda: "Purchase Approval" in screen("fs"), 10, "/bpmn demo after /reload")
         send("fs", "/bpmn close")
-        wait(lambda: "采购审批流程" not in screen("fs"), 6, "/bpmn close")
+        wait(lambda: "Purchase Approval" not in screen("fs"), 6, "/bpmn close")
         record("/reload cleanly tore down and reloaded pi-bpmn-side-view")
 
         # 8. Regular mode (tuiMode: "regular") fallback check
@@ -538,9 +538,9 @@ with tempfile.TemporaryDirectory(prefix="pi-bpmn-e2e-") as tmp:
         wait(lambda: "─" in screen("reg"), 15, "Pi regular mode startup")
         time.sleep(0.5)
         send("reg", "/bpmn demo")
-        wait(lambda: "采购审批流程" in screen("reg") and "申请人" in screen("reg"), 10, "regular mode right overlay")
+        wait(lambda: "Purchase Approval" in screen("reg") and "Requester" in screen("reg"), 10, "regular mode right overlay")
         literal("reg", "REGULAR_MODE_INPUT")
-        wait(lambda: "REGULAR_MODE_INPUT" in screen("reg") and "采购审批流程" in screen("reg"), 6, "regular mode non-capturing typing")
+        wait(lambda: "REGULAR_MODE_INPUT" in screen("reg") and "Purchase Approval" in screen("reg"), 6, "regular mode non-capturing typing")
         snap("reg", "05-regular-overlay", 144, 40)
         record("Regular mode fallback rendered right-anchored nonCapturing overlay while preserving editor input")
 

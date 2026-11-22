@@ -592,25 +592,25 @@ export function extractBpmnFromMarkdown(markdown: string): string | null {
 export const DEMO_BPMN_XML = `<?xml version="1.0" encoding="UTF-8"?>
 <bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
                   id="Defs_PurchaseApproval"
-                  name="采购审批流程 (Purchase Approval)"
+                  name="Purchase Approval"
                   targetNamespace="http://example.com/bpmn">
   <bpmn:collaboration id="Collab_1">
-    <bpmn:participant id="Pool_Company" name="公司内部采购" processRef="Proc_Purchase" />
-    <bpmn:participant id="Pool_Vendor" name="外部供应商" />
-    <bpmn:messageFlow id="MF_1" name="发送采购单" sourceRef="Task_SendPO" targetRef="Pool_Vendor" />
-    <bpmn:messageFlow id="MF_2" name="回传发货单" sourceRef="Pool_Vendor" targetRef="Event_WaitShip" />
+    <bpmn:participant id="Pool_Company" name="Internal Procurement" processRef="Proc_Purchase" />
+    <bpmn:participant id="Pool_Vendor" name="External Vendor" />
+    <bpmn:messageFlow id="MF_1" name="Send PO" sourceRef="Task_SendPO" targetRef="Pool_Vendor" />
+    <bpmn:messageFlow id="MF_2" name="Ship Notice" sourceRef="Pool_Vendor" targetRef="Event_WaitShip" />
   </bpmn:collaboration>
 
-  <bpmn:process id="Proc_Purchase" name="采购审批流程 (Purchase Approval)" isExecutable="false">
+  <bpmn:process id="Proc_Purchase" name="Purchase Approval" isExecutable="false">
     <bpmn:laneSet id="LaneSet_1">
-      <bpmn:lane id="Lane_Requester" name="申请人">
+      <bpmn:lane id="Lane_Requester" name="Requester">
         <bpmn:flowNodeRef>Start_1</bpmn:flowNodeRef>
         <bpmn:flowNodeRef>Task_Draft</bpmn:flowNodeRef>
         <bpmn:flowNodeRef>Task_Revise</bpmn:flowNodeRef>
         <bpmn:flowNodeRef>Event_WaitShip</bpmn:flowNodeRef>
         <bpmn:flowNodeRef>End_Done</bpmn:flowNodeRef>
       </bpmn:lane>
-      <bpmn:lane id="Lane_Manager" name="部门审批">
+      <bpmn:lane id="Lane_Manager" name="Manager">
         <bpmn:flowNodeRef>Task_Review</bpmn:flowNodeRef>
         <bpmn:flowNodeRef>GW_Approve</bpmn:flowNodeRef>
         <bpmn:flowNodeRef>GW_Fork</bpmn:flowNodeRef>
@@ -618,39 +618,39 @@ export const DEMO_BPMN_XML = `<?xml version="1.0" encoding="UTF-8"?>
         <bpmn:flowNodeRef>GW_Join</bpmn:flowNodeRef>
         <bpmn:flowNodeRef>End_Cancelled</bpmn:flowNodeRef>
       </bpmn:lane>
-      <bpmn:lane id="Lane_Finance" name="财务复核">
+      <bpmn:lane id="Lane_Finance" name="Finance">
         <bpmn:flowNodeRef>Task_Budget</bpmn:flowNodeRef>
       </bpmn:lane>
     </bpmn:laneSet>
 
-    <bpmn:startEvent id="Start_1" name="收到采购需求">
-      <bpmn:documentation>业务部门提出新设备或服务采购申请。</bpmn:documentation>
+    <bpmn:startEvent id="Start_1" name="Request Received">
+      <bpmn:documentation>A department submits a new equipment or service purchase request.</bpmn:documentation>
     </bpmn:startEvent>
-    <bpmn:userTask id="Task_Draft" name="填写采购申请单">
-      <bpmn:documentation>录入物品清单、预算金额与交付日期。</bpmn:documentation>
+    <bpmn:userTask id="Task_Draft" name="Submit Purchase Form">
+      <bpmn:documentation>Enter line items, budget amount, and target delivery date.</bpmn:documentation>
     </bpmn:userTask>
-    <bpmn:userTask id="Task_Review" name="审核需求与预算" />
-    <bpmn:exclusiveGateway id="GW_Approve" name="审批结果?" default="Flow_Reject" />
-    <bpmn:userTask id="Task_Revise" name="补充材料并重提" />
-    <bpmn:endEvent id="End_Cancelled" name="申请已终止">
+    <bpmn:userTask id="Task_Review" name="Review Scope &amp; Budget" />
+    <bpmn:exclusiveGateway id="GW_Approve" name="Approved?" default="Flow_Reject" />
+    <bpmn:userTask id="Task_Revise" name="Revise &amp; Resubmit" />
+    <bpmn:endEvent id="End_Cancelled" name="Request Cancelled">
       <bpmn:terminateEventDefinition />
     </bpmn:endEvent>
-    <bpmn:parallelGateway id="GW_Fork" name="并行执行" />
-    <bpmn:sendTask id="Task_SendPO" name="下发正式采购单" />
-    <bpmn:serviceTask id="Task_Budget" name="冻结预算并入账" />
-    <bpmn:parallelGateway id="GW_Join" name="等待全部完成" />
-    <bpmn:intermediateCatchEvent id="Event_WaitShip" name="等待供应商发货">
+    <bpmn:parallelGateway id="GW_Fork" name="Parallel Split" />
+    <bpmn:sendTask id="Task_SendPO" name="Issue Purchase Order" />
+    <bpmn:serviceTask id="Task_Budget" name="Reserve Budget" />
+    <bpmn:parallelGateway id="GW_Join" name="Wait for All" />
+    <bpmn:intermediateCatchEvent id="Event_WaitShip" name="Await Shipment">
       <bpmn:timerEventDefinition />
     </bpmn:intermediateCatchEvent>
-    <bpmn:endEvent id="End_Done" name="采购已完成" />
+    <bpmn:endEvent id="End_Done" name="Order Completed" />
 
     <bpmn:sequenceFlow id="Flow_1" sourceRef="Start_1" targetRef="Task_Draft" />
     <bpmn:sequenceFlow id="Flow_2" sourceRef="Task_Draft" targetRef="Task_Review" />
     <bpmn:sequenceFlow id="Flow_3" sourceRef="Task_Review" targetRef="GW_Approve" />
-    <bpmn:sequenceFlow id="Flow_Pass" name="通过" sourceRef="GW_Approve" targetRef="GW_Fork" />
-    <bpmn:sequenceFlow id="Flow_Revise" name="需补充" sourceRef="GW_Approve" targetRef="Task_Revise" />
-    <bpmn:sequenceFlow id="Flow_Reject" name="拒绝" sourceRef="GW_Approve" targetRef="End_Cancelled" />
-    <bpmn:sequenceFlow id="Flow_Loop" name="重新提交" sourceRef="Task_Revise" targetRef="Task_Review" />
+    <bpmn:sequenceFlow id="Flow_Pass" name="Approve" sourceRef="GW_Approve" targetRef="GW_Fork" />
+    <bpmn:sequenceFlow id="Flow_Revise" name="Revise" sourceRef="GW_Approve" targetRef="Task_Revise" />
+    <bpmn:sequenceFlow id="Flow_Reject" name="Reject" sourceRef="GW_Approve" targetRef="End_Cancelled" />
+    <bpmn:sequenceFlow id="Flow_Loop" name="Resubmit" sourceRef="Task_Revise" targetRef="Task_Review" />
     <bpmn:sequenceFlow id="Flow_P1" sourceRef="GW_Fork" targetRef="Task_SendPO" />
     <bpmn:sequenceFlow id="Flow_P2" sourceRef="GW_Fork" targetRef="Task_Budget" />
     <bpmn:sequenceFlow id="Flow_J1" sourceRef="Task_SendPO" targetRef="GW_Join" />
@@ -659,7 +659,7 @@ export const DEMO_BPMN_XML = `<?xml version="1.0" encoding="UTF-8"?>
     <bpmn:sequenceFlow id="Flow_End" sourceRef="Event_WaitShip" targetRef="End_Done" />
 
     <bpmn:textAnnotation id="Note_1">
-      <bpmn:text>超过 5 万元须追加财务总监审批</bpmn:text>
+      <bpmn:text>Orders over $50k require CFO sign-off</bpmn:text>
     </bpmn:textAnnotation>
     <bpmn:association id="Assoc_1" sourceRef="Task_Budget" targetRef="Note_1" />
   </bpmn:process>

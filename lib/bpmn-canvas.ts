@@ -371,9 +371,11 @@ export class BpmnCanvas {
     if (!label || y < 0 || y >= this.height) return;
     const isFreeForLabel = (sx: number, width: number): boolean => {
       if (sx < 0 || sx + width > this.width) return false;
-      for (let rx = sx; rx < sx + width; rx++) {
+      const checkStart = Math.max(0, sx - 1);
+      const checkEnd = Math.min(this.width, sx + width + 1);
+      for (let rx = checkStart; rx < checkEnd; rx++) {
         const cell = this.grid[y]![rx]!;
-        if (cell.locked) return false;
+        if (rx >= sx && rx < sx + width && cell.locked) return false;
         const isEmptyOrLine =
           cell.ch === " " ||
           cell.ch === "┄" ||

@@ -21,10 +21,10 @@ describe("layoutAndRenderBpmn", () => {
     assert.ok(rendered.height <= 32, `Expected height <= 32, got ${rendered.height}`);
     const lines = rendered.canvas.renderPlainSlice(0, 0, 60, rendered.height);
     const joined = lines.join("\n");
-    assert.ok(joined.includes("收到采购需求"));
-    assert.ok(joined.includes("采购已完成"));
-    assert.ok(joined.includes("审批结果?"));
-    assert.ok(joined.includes("外部供应商"));
+    assert.ok(joined.includes("Request Received"));
+    assert.ok(joined.includes("Order Completed"));
+    assert.ok(joined.includes("Approved?"));
+    assert.ok(joined.includes("External Vendor"));
     assert.ok(joined.includes("«"));
   });
 
@@ -55,14 +55,14 @@ describe("layoutAndRenderBpmn", () => {
         }
       }
 
-      // Check key CJK labels & swimlanes appear in rendered output
+      // Check key labels & swimlanes appear in rendered output
       const fullLines = rendered.canvas.renderPlainSlice(0, 0, rendered.width, rendered.height);
       const joined = fullLines.join("\n");
-      assert.ok(joined.includes("申请人"));
-      assert.ok(joined.includes("部门审批"));
-      assert.ok(joined.includes("财务复核"));
-      assert.ok(joined.includes("外部供应商"));
-      assert.ok(joined.includes("审批结果?"));
+      assert.ok(joined.includes("Requester"));
+      assert.ok(joined.includes("Manager"));
+      assert.ok(joined.includes("Finance"));
+      assert.ok(joined.includes("External Vendor"));
+      assert.ok(joined.includes("Approved?"));
       assert.ok(joined.includes("◇×"));
       assert.ok(joined.includes("◇+"));
       assert.ok(joined.includes("«")); // rework back-edge marker

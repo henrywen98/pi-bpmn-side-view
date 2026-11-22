@@ -241,7 +241,7 @@ function buildTracks(model: BpmnModel): { tracks: Track[]; nodeTrack: Map<string
     let idx = tracks.findIndex((t) => t.id === poolKey);
     if (idx === -1) {
       const poolName = node.poolId ? poolNameById.get(node.poolId) : undefined;
-      const title = poolName || (tracks.length > 0 ? "未分组" : model.title || "Process");
+      const title = poolName || (tracks.length > 0 ? "Unassigned" : model.title || "Process");
       idx = tracks.length;
       tracks.push({ id: poolKey, title, poolName, nodeIds: [] });
     }
@@ -580,7 +580,7 @@ function renderFitFullDiagram(
   const rightMargin = hasBack ? 3 : 0;
   const contentW = Math.max(24, safeW - leftMargin - rightMargin);
 
-  // Build legend rows for swimlanes (①申请人 ②部门审批 ...)
+  // Build legend rows for swimlanes (1·Requester 2·Manager ...)
   const legendLines: string[] = [];
   if (showTrackHeaders && tracks.length > 0) {
     const items = tracks.map((t, i) => `${laneTag(i)}${t.title}`);
@@ -706,7 +706,7 @@ function renderFitFullDiagram(
     const isBack = backEdgeIds.has(flow.id) || (flow.kind === "sequenceFlow" && dst.y <= src.y);
     const isMsg = flow.kind === "messageFlow";
     const style: StyleRole = isMsg ? "messageEdge" : isBack ? "backEdge" : "edge";
-    const label = flow.name || (flow.isDefault ? "默认" : "");
+    const label = flow.name || (flow.isDefault ? "default" : "");
 
     if (isBack) {
       const useLeftGutter = src.x <= leftMargin + Math.floor(contentW / 3);
@@ -1055,7 +1055,7 @@ function renderTopToBottom(
     const isBack = backEdgeIds.has(flow.id) || (flow.kind === "sequenceFlow" && dst.rank <= src.rank);
     const isMsg = flow.kind === "messageFlow";
     const style: StyleRole = isMsg ? "messageEdge" : isBack ? "backEdge" : "edge";
-    const label = flow.name || (flow.isDefault ? "默认" : "");
+    const label = flow.name || (flow.isDefault ? "default" : "");
 
     if (isMsg) {
       const srcY = src.y + Math.floor(src.h / 2);
@@ -1376,7 +1376,7 @@ function renderLeftToRight(
     const isBack = backEdgeIds.has(flow.id) || (flow.kind === "sequenceFlow" && dst.rank <= src.rank);
     const isMsg = flow.kind === "messageFlow";
     const style: StyleRole = isMsg ? "messageEdge" : isBack ? "backEdge" : "edge";
-    const label = flow.name || (flow.isDefault ? "默认" : "");
+    const label = flow.name || (flow.isDefault ? "default" : "");
 
     if (isMsg) {
       const srcX = src.x + Math.floor(src.w / 2);

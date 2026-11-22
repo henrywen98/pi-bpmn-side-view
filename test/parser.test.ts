@@ -6,7 +6,7 @@ describe("parseBpmnXml", () => {
   it("parses pools, lanes, events, tasks, gateways, sequence flows, message flows, and annotations", () => {
     const model = parseBpmnXml(DEMO_BPMN_XML);
     assert.equal(model.diagnostics.length, 0);
-    assert.equal(model.title, "采购审批流程 (Purchase Approval)");
+    assert.equal(model.title, "Purchase Approval");
     assert.equal(model.pools.length, 2);
     assert.equal(model.lanes.length, 3);
     assert.ok(model.nodes.length >= 13); // 12 internal + 1 black-box vendor pool
@@ -14,7 +14,7 @@ describe("parseBpmnXml", () => {
     const start = model.nodes.find((n) => n.id === "Start_1");
     assert.equal(start?.kind, "startEvent");
     assert.equal(start?.laneId, "Lane_Requester");
-    assert.equal(start?.documentation, "业务部门提出新设备或服务采购申请。");
+    assert.equal(start?.documentation, "A department submits a new equipment or service purchase request.");
 
     const waitEvent = model.nodes.find((n) => n.id === "Event_WaitShip");
     assert.equal(waitEvent?.kind, "intermediateCatchEvent");
@@ -25,7 +25,7 @@ describe("parseBpmnXml", () => {
 
     const rejectFlow = model.flows.find((f) => f.id === "Flow_Reject");
     assert.equal(rejectFlow?.isDefault, true);
-    assert.equal(rejectFlow?.name, "拒绝");
+    assert.equal(rejectFlow?.name, "Reject");
 
     const msgFlows = model.flows.filter((f) => f.kind === "messageFlow");
     assert.equal(msgFlows.length, 2);
@@ -48,7 +48,7 @@ describe("parseBpmnXml", () => {
         <endEvent id="e1" name="Done" />
         <sequenceFlow id="f1" sourceRef="s1" targetRef="t1" />
         <sequenceFlow id="f2" sourceRef="t1" targetRef="e1" />
-        <sequenceFlow id="f3" sourceRef="b1" targetRef="e1" name="SLA超期" />
+        <sequenceFlow id="f3" sourceRef="b1" targetRef="e1" name="SLA Breached" />
       </process>
     </definitions>`;
 
