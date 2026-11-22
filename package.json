@@ -1,20 +1,61 @@
 {
   "name": "pi-bpmn-side-view",
   "version": "0.1.0",
-  "private": true,
+  "description": "Display interactive BPMN 2.0 diagrams in a resizable side or top split view inside Pi.",
   "type": "module",
-  "description": "Display interactive BPMN 2.0 diagrams in a right-side view inside Pi.",
+  "license": "MIT",
+  "author": "Henry WEN",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/henrywen98/pi-bpmn-side-view.git"
+  },
+  "homepage": "https://github.com/henrywen98/pi-bpmn-side-view#readme",
+  "bugs": {
+    "url": "https://github.com/henrywen98/pi-bpmn-side-view/issues"
+  },
+  "keywords": [
+    "pi-package",
+    "pi-extension",
+    "bpmn",
+    "bpmn2",
+    "workflow",
+    "diagrams",
+    "terminal",
+    "tui"
+  ],
+  "engines": {
+    "node": ">=22.19.0"
+  },
+  "files": [
+    "index.ts",
+    "lib/",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE",
+    "SECURITY.md"
+  ],
   "pi": {
     "extensions": [
       "./index.ts"
-    ]
+    ],
+    "image": "https://raw.githubusercontent.com/henrywen98/pi-bpmn-side-view/main/assets/preview-fit.png"
   },
   "scripts": {
     "test": "node --experimental-strip-types --test test/*.test.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "check": "npm run typecheck && npm test",
+    "prepublishOnly": "npm run check"
   },
   "peerDependencies": {
+    "@earendil-works/pi-coding-agent": "*",
+    "@earendil-works/pi-tui": "*",
+    "typebox": "*"
+  },
+  "devDependencies": {
     "@earendil-works/pi-coding-agent": "^1.6.0",
-    "@earendil-works/pi-tui": "^1.6.0"
+    "@earendil-works/pi-tui": "^1.6.0",
+    "@types/node": "^22.0.0",
+    "typebox": "^1.4.7",
+    "typescript": "~5.9.3"
   }
 }
