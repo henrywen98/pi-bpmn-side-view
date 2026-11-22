@@ -1,0 +1,20 @@
+{
+  "name": "pi-bpmn-side-view",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Display interactive BPMN 2.0 diagrams in a right-side view inside Pi.",
+  "pi": {
+    "extensions": [
+      "./index.ts"
+    ]
+  },
+  "scripts": {
+    "test": "node --experimental-strip-types --test test/*.test.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "@earendil-works/pi-coding-agent": "^1.6.0",
+    "@earendil-works/pi-tui": "^1.6.0"
+  }
+}
