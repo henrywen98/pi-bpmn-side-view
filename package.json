@@ -1,6 +1,6 @@
 {
   "name": "pi-bpmn-side-view",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Display interactive BPMN 2.0 diagrams in a resizable side or top split view inside Pi.",
   "type": "module",
   "license": "MIT",

@@ -28,6 +28,45 @@ describe("layoutAndRenderBpmn", () => {
     assert.ok(joined.includes("«"));
   });
 
+  it("keeps each decision label next to its own arrow in narrow FIT views", () => {
+    for (const [width, height, names] of [
+      [60, 32, ["Revise", "Reject", "Approve"]],
+      [60, 23, ["Revise", "Reject", "Approve"]],
+      [48, 24, ["需修改", "拒绝", "同意"]],
+      [38, 24, ["Revise", "Reject", "Approve"]],
+    ] as const) {
+      const branches = ["Flow_Revise", "Flow_Reject", "Flow_Pass"] as const;
+      const flows = demoModel.flows.map((flow) => {
+        const index = branches.findIndex((id) => id === flow.id);
+        return index < 0 ? flow : { ...flow, name: names[index]! };
+      });
+      for (const order of [flows, [...flows].reverse()]) {
+        const r = layoutAndRenderBpmn({ ...demoModel, flows: order }, {
+          orientation: "tb", zoom: "fit", availableWidth: width, availableHeight: height,
+        });
+        assert.equal(r.effectiveZoom, "fit");
+        assert.ok(r.width <= width && r.height <= height);
+        const byId = new Map(r.hitRects.map((rect) => [rect.nodeId, rect]));
+        for (const [i, id] of branches.entries()) {
+          const target = byId.get(flows.find((f) => f.id === id)!.targetRef)!;
+          const x = target.x + Math.floor(target.width / 2);
+          const y = target.y - 1;
+          const label = names[i]!;
+          assert.equal(r.canvas.getChar(x, y), "▼");
+          const adjacent = [" ", ""].some((gap) => {
+            const w = visibleWidth(label) + gap.length;
+            const beside = (col: number) => r.canvas.renderPlainSlice(col, y, w, 1)[0];
+            return beside(x + 1) === gap + label || (x >= w && beside(x - w) === label + gap);
+          });
+          assert.ok(adjacent, `Missing ${label} at its target in ${width}×${height}`);
+        }
+        const gate = byId.get("GW_Approve")!;
+        assert.equal(r.canvas.getChar(gate.x - 1, gate.y), "┌");
+        assert.equal(r.canvas.getChar(gate.x + gate.width, gate.y), "┐");
+      }
+    }
+  });
+
   for (const orientation of ["tb", "lr"] as const) {
     it(`renders demo BPMN cleanly in ${orientation.toUpperCase()} detail mode without overlapping nodes`, () => {
       const rendered = layoutAndRenderBpmn(demoModel, {

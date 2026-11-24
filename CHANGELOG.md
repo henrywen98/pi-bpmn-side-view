@@ -2,6 +2,11 @@
 
 All notable changes to `pi-bpmn-side-view` are documented in this file.
 
+## [0.1.1] - 2026-11-24
+
+### Fixed
+- In narrow FIT views, decision labels now appear beside their destination arrows. The purchase approval demo shows all three outcomes even at 38 columns.
+
 ## [0.1.0] - 2026-11-23
 
 ### Added

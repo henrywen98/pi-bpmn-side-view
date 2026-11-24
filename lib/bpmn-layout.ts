@@ -696,7 +696,13 @@ function renderFitFullDiagram(
     hitRects.push({ nodeId: pn.node.id, x: pn.x, y: pn.y, width: pn.w, height: pn.h });
   }
 
-  // Draw edges cleanly within safeW
+  const forwardOut = new Map<string, number>();
+  for (const f of model.flows) {
+    if (f.kind === "sequenceFlow" && !backEdgeIds.has(f.id) && placedById.has(f.targetRef)) {
+      forwardOut.set(f.sourceRef, (forwardOut.get(f.sourceRef) ?? 0) + 1);
+    }
+  }
+  const branchLabels: Array<{ x: number; y: number; text: string }> = [];
   let backIdx = 0;
   for (const flow of model.flows) {
     const src = placedById.get(flow.sourceRef);
@@ -778,60 +784,39 @@ function renderFitFullDiagram(
       continue;
     }
 
-    // Forward downward sequence flow
-    const srcCx = src.x + Math.floor(src.w / 2);
-    const dstCx = dst.x + Math.floor(dst.w / 2);
+    const dstX = dst.x + Math.floor(dst.w / 2);
     const startY = src.y + 1;
     const endY = dst.y - 1;
     if (endY < startY) continue;
 
-    if (startY === endY) {
-      // Tight 1-row gap
-      if (srcCx === dstCx) {
-        canvas.setChar(dstCx, endY, "▼", style, { skipLocked: true });
+    // As in BPMN Kit's port-based layout, split towards each target. In a vertical
+    // FIT view the outer branches leave left/right; the middle one can drop straight down.
+    const split = src.node.kind.endsWith("Gateway") && (forwardOut.get(src.node.id) ?? 0) > 1;
+    const side = dstX < src.x ? -1 : dstX >= src.x + src.w ? 1 : 0;
+    const border = side < 0 ? src.x : src.x + src.w - 1;
+    const port = border + side;
+    const useSide = split && side !== 0 && !canvas.isLocked(port, src.y) && !canvas.isLocked(port + side, src.y);
+    const startX = useSide ? port : side === 0 ? dstX : src.x + Math.floor(src.w / 2);
+    canvas.drawPolyline([
+      ...(useSide ? [{ x: border, y: src.y }] : []),
+      { x: startX, y: src.y }, { x: startX, y: startY },
+      { x: dstX, y: startY }, { x: dstX, y: endY },
+    ], style);
+    canvas.setChar(dstX, endY, "▼", style, { skipLocked: true, lock: true });
+    if (label) {
+      const text = clampText(label, 8);
+      if (split) {
+        branchLabels.push({ x: dstX, y: endY, text });
       } else {
-        canvas.drawPolyline(
-          [
-            { x: srcCx, y: startY },
-            { x: dstCx, y: endY },
-          ],
-          style,
-          { arrow: "down" },
-        );
-      }
-      if (label && Math.abs(dstCx - srcCx) >= 4) {
-        canvas.drawEdgeLabel(Math.round((srcCx + dstCx) / 2), startY, clampText(label, 8));
-      }
-    } else {
-      const midY = Math.min(endY - 1, startY);
-      if (srcCx === dstCx) {
-        canvas.drawPolyline(
-          [
-            { x: srcCx, y: startY },
-            { x: dstCx, y: endY },
-          ],
-          style,
-          { arrow: "down" },
-        );
-        if (label) {
-          canvas.drawEdgeLabel(srcCx + Math.ceil(visibleWidth(label) / 2) + 2, startY, clampText(label, 8));
-        }
-      } else {
-        canvas.drawPolyline(
-          [
-            { x: srcCx, y: startY },
-            { x: srcCx, y: midY },
-            { x: dstCx, y: midY },
-            { x: dstCx, y: endY },
-          ],
-          style,
-          { arrow: "down" },
-        );
-        if (label) {
-          canvas.drawEdgeLabel(Math.round((srcCx + dstCx) / 2), midY, clampText(label, 8));
-        }
+        const labelX = startX === dstX ? dstX + Math.ceil(visibleWidth(text) / 2) + 2 : (startX + dstX) / 2;
+        canvas.drawEdgeLabel(Math.round(labelX), startY, text);
       }
     }
+  }
+
+  // Place decision names after routing, so a later line cannot erase a name.
+  for (const { x, y, text } of branchLabels.sort((a, b) => a.y - b.y || a.x - b.x)) {
+    drawFitBranchLabel(canvas, x, y, text);
   }
 
   // Notes at bottom
@@ -852,6 +837,28 @@ function renderFitFullDiagram(
     height: totalHeight,
     effectiveZoom: "fit",
   };
+}
+
+/** Fit a name beside its arrow without erasing another connector or splitting a wide glyph. */
+function drawFitBranchLabel(canvas: BpmnCanvas, x: number, y: number, text: string): void {
+  const width = visibleWidth(text);
+  const room = (step: number): number => {
+    let n = 0;
+    while (n < width + 1) {
+      const col = x + step * (n + 1);
+      if (canvas.isLocked(col, y) || canvas.getChar(col, y) !== " ") break;
+      n++;
+    }
+    return n;
+  };
+  const right = room(1);
+  const left = room(-1);
+  const available = Math.max(right, left);
+  const gap = available === width ? 0 : 1; // keep the whole word if only its spacer would overflow
+  const shown = clampText(text, available - gap);
+  if (!shown) return;
+  const col = right >= left ? x + 1 + gap : x - visibleWidth(shown) - gap;
+  canvas.drawText(col, y, shown, "edgeLabel", { lock: true });
 }
 
 function renderSwimlaneDiagram(

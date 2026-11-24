@@ -40,7 +40,7 @@ pi install npm:pi-bpmn-side-view
 **From GitHub (pinned release tag):**
 
 ```bash
-pi install git:github.com/henrywen98/pi-bpmn-side-view@v0.1.0
+pi install git:github.com/henrywen98/pi-bpmn-side-view@v0.1.1
 ```
 
 **Try once without installing:**
